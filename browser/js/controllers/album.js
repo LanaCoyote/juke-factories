@@ -1,49 +1,49 @@
-app.controller('AlbumCtrl', function($scope, $http, $rootScope) {
+app.controller('AlbumCtrl', function($scope, $http, $rootScope, StatsFactory, PlayerFactory) {
 
   // load our initial data
-  $http.get('/api/albums/')
-  .then(res => $http.get('/api/albums/' + res.data[1]._id))
-  .then(res => res.data)
-  .then(album => {
-    album.imageUrl = '/api/albums/' + album._id + '.image';
-    album.songs.forEach(function(song){
-      song.audioUrl = '/api/songs/' + song._id + '.audio';
-    });
-    $scope.album = album;
-  }).catch(console.error.bind(console));
+  var loadAlbum = function( albumId ) {
+  
+    return $http.get('/api/albums/' + albumId)
+    .then(res => res.data )
+    .then(album => {
+      album.imageUrl = '/api/albums/' + album._id + '.image';
+      album.songs.forEach(function(song){
+        song.audioUrl = '/api/songs/' + song._id + '.audio';
+      });
+      $scope.album = album;
+    }).then(function() {
+      return StatsFactory.totalTime( $scope.album );
+    }).then( duration => {
+      $scope.duration = Math.round( Number( duration ) ).toString();
+    }).catch(console.error.bind(console));
+  
+  }
+
+  $scope.show = false;
+
+  $rootScope.$on( 'showview', function( event, view, albumId ) {
+    if ( view === 'Album' ) {
+
+      loadAlbum( albumId ).then( function() {
+        $scope.show = true;
+      });
+
+    }
+    else $scope.show = false;
+  });
+
+  $scope.isCurrentSong = function( song ) {
+    return PlayerFactory.currentSong === song;
+  }
+
+  $scope.isPlaying = function ( song ) {
+    return PlayerFactory.isPlaying() && $scope.isCurrentSong( song );
+  }
 
   // main toggle
   $scope.toggle = function (song) {
-    if ($scope.playing) $rootScope.$broadcast('pause');
-    else $rootScope.$broadcast('play', song);
+    if ($scope.isPlaying()) PlayerFactory.pause();
+    else PlayerFactory.start( song, $scope.album );
   }
-
-  // incoming events (from Player, toggle, or skip)
-  $scope.$on('pause', pause);
-  $scope.$on('play', play);
-  $scope.$on('next', next);
-  $scope.$on('prev', prev);
-
-  // functionality
-  function pause () {
-    $scope.playing = false;
-  }
-  function play (event, song){
-    $scope.playing = true;
-    $scope.currentSong = song;
-  };
-
-  // a "true" modulo that wraps negative to the top of the range
-  function mod (num, m) { return ((num%m)+m)%m; };
-
-  // jump `val` spots in album (negative to go back)
-  function skip (val) {
-    if (!$scope.currentSong) return;
-    var idx = $scope.album.songs.indexOf($scope.currentSong);
-    idx = mod( (idx + (val || 1)), $scope.album.songs.length );
-    $rootScope.$broadcast('play', $scope.album.songs[idx]);
-  };
-  function next () { skip(1); };
-  function prev () { skip(-1); };
 
 });

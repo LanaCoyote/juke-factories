@@ -7,27 +7,57 @@
 	<link href="/style.css" rel="stylesheet" />
   <script src="/angular/angular.js" defer></script>
   <script src="/js/module.js" defer></script>
+  <script src="/js/factories/stats.js" defer></script>
+  <script src="/js/factories/player.js" defer></script>
+  <script src="/js/controllers/albumList.js" defer></script>
   <script src="/js/controllers/album.js" defer></script>
+  <script src="/js/controllers/artistList.js" defer></script>
+  <script src="/js/controllers/artist.js" defer></script>
   <script src="/js/controllers/player.js" defer></script>
+  <script src="/js/controllers/sidebar.js" defer></script>
 </head>
 <body ng-app="juke">
 	<div id="main" class="container-fluid">
 
 		<div class="col-xs-2">
-			<sidebar>
+			<sidebar ng-controller="SidebarCtrl">
         <img src="juke.svg" class="logo">
 				<section>
-					<h4 class="playlist-item active">
-						<a href="#">ALBUMS</a>
+					<h4 class="playlist-item" ng-class="{ active: curView === 'albums' }">
+						<a href="#" ng-click="viewAlbums()">ALBUMS</a>
 					</h4>
 				</section>
+        <section>
+            <h4 class="playlist-item" ng-class="{ active: curView === 'artists' }">
+                <a ng-click="viewAllArtists()" href="#">ARTISTS</a>
+            </h4>
+        </section>
 			</sidebar>
 		</div>
 
 		<div class="col-xs-10">
-      <div class="album" ng-controller="AlbumCtrl">
+      <!-- multi album view -->
+      <div class="album-list" ng-controller="AlbumListCtrl" ng-show="show">
+          <h3>Albums</h3>
+          <div class="row">
+              <div class="col-xs-4" ng-repeat="album in albums">
+                  <a class="thumbnail" href="#" ng-click="viewAlbum(album._id)">
+                      <img ng-src="{{ album.imageUrl }}">
+                      <div class="caption">
+                          <h5>
+                              <span>{{ album.name }}</span>
+                          </h5>
+                          <small>{{ album.songs.length }}</small>
+                      </div>
+                  </a>
+              </div>
+          </div>
+      </div>
+
+      <!-- single album view -->
+      <div ng-show="show" class="album" ng-controller="AlbumCtrl">
           <p>
-              <h3>{{ album.name }}</h3>
+              <h3>{{ album.name }} <small>{{ duration }} seconds</small></h3>
               <img ng-src="{{ album.imageUrl }}" class="img-thumbnail">
           </p>
           <table class='table'>
@@ -40,10 +70,10 @@
                   </tr>
               </thead>
               <tbody>
-                  <tr ng-repeat="song in album.songs" ng-class="{active: song === currentSong}">
+                  <tr ng-repeat="song in album.songs" ng-class="{active: isCurrentSong(song)}">
                       <td>
                           <button class="btn btn-default btn-xs" ng-click="toggle(song)">
-                              <span class="glyphicon" ng-class="{'glyphicon-pause': playing && song === currentSong, 'glyphicon-play': song !== currentSong || !playing}"></span>
+                              <span class="glyphicon" ng-class="{'glyphicon-pause': isPlaying(song), 'glyphicon-play': !isPlaying(song)}"></span>
                           </button>
                       </td>
                       <td>{{ song.name }}</td>
@@ -53,16 +83,34 @@
               </tbody>
           </table>
       </div>
+
+      <!-- multi artist view -->
+      <div ng-controller="ArtistListCtrl" ng-show="show">
+          <h3>Artists</h3>
+          <div class="list-group">
+              <div class="list-group-item" ng-repeat="artist in artists">
+                  <a href="#" ng-click="viewArtist( artist._id )">{{ artist.name }}</a>
+              </div>
+          </div>
+      </div>
+
+      <!-- single artist view -->
+      <div ng-controller="ArtistCtrl" ng-show="show">
+          <h3>_artist_name_</h3>
+          <h4>ALBUMS</h4>
+          <h4>SONGS</h4>
+      </div>
+
     </div>
 
 		<footer>
-      <div ng-show="currentSong" ng-controller="PlayerCtrl">
+      <div ng-show="hasCurrentSong()" ng-controller="PlayerCtrl">
           <div class="pull-left">
               <button class="btn btn-default" ng-click="prev()">
                   <span class="glyphicon glyphicon-step-backward"></span>
               </button>
               <button class="btn btn-default" ng-click="toggle(currentSong)">
-                  <span class="glyphicon" ng-class="{'glyphicon-pause': playing, 'glyphicon-play': !playing}"></span>
+                  <span class="glyphicon" ng-class="{'glyphicon-pause': isPlaying(), 'glyphicon-play': !isPlaying()}"></span>
               </button>
               <button class="btn btn-default" ng-click="next()">
                   <span class="glyphicon glyphicon-step-forward"></span>
@@ -70,7 +118,7 @@
           </div>
           <div class="bar">
               <div class="progress">
-                  <div class="progress-bar" ng-style="{width: progress + '%'}"></div>
+                  <div class="progress-bar" ng-style="{width: getProgress() + '%'}"></div>
               </div>
           </div>
       </div>
