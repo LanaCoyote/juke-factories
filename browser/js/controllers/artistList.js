@@ -1,4 +1,4 @@
-app.controller('ArtistListCtrl', function( $scope, $rootScope, $http ) {
+app.controller('ArtistListCtrl', function( $scope, $rootScope, ArtistFactory ) {
 
   $scope.show = false;
 
@@ -7,8 +7,7 @@ app.controller('ArtistListCtrl', function( $scope, $rootScope, $http ) {
     else $scope.show = false;
   });
 
-  $http.get('/api/artists/')
-  .then(res => res.data)
+  ArtistFactory.fetchAll()
   .then(artists => {
 
     $scope.artists = artists;

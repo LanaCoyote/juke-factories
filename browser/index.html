@@ -9,6 +9,9 @@
   <script src="/js/module.js" defer></script>
   <script src="/js/factories/stats.js" defer></script>
   <script src="/js/factories/player.js" defer></script>
+  <script src="/js/factories/album.js" defer></script>
+  <script src="/js/factories/artist.js" defer></script>
+  <script src="/js/factories/song.js" defer></script>
   <script src="/js/controllers/albumList.js" defer></script>
   <script src="/js/controllers/album.js" defer></script>
   <script src="/js/controllers/artistList.js" defer></script>
@@ -96,9 +99,48 @@
 
       <!-- single artist view -->
       <div ng-controller="ArtistCtrl" ng-show="show">
-          <h3>_artist_name_</h3>
+          <h3>{{ artist.name }}</h3>
           <h4>ALBUMS</h4>
+          <div class="album-list">
+            <div class="row">
+                <div class="col-xs-4" ng-repeat="album in artist.albums">
+                    <a class="thumbnail" href="#" ng-click="viewAlbum(album._id)">
+                        <img ng-src="{{ album.imageUrl }}">
+                        <div class="caption">
+                            <h5>
+                                <span>{{ album.name }}</span>
+                            </h5>
+                            <small>{{ album.songs.length }}</small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
           <h4>SONGS</h4>
+            <div class="album" >
+            <table class='table'>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Name</th>
+                        <th>Artists</th>
+                        <th>Genres</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="song in artist.songs" ng-class="{active: isCurrentSong(song)}">
+                        <td>
+                            <button class="btn btn-default btn-xs" ng-click="toggle(song)">
+                                <span class="glyphicon" ng-class="{'glyphicon-pause': isPlaying(song), 'glyphicon-play': !isPlaying(song)}"></span>
+                            </button>
+                        </td>
+                        <td>{{ song.name }}</td>
+                        <td><span ng-repeat="artist in song.artists">{{ artist.name }}{{$last ? '' : ', '}}</span></td>
+                        <td>{{ song.genres.join(', ') }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
       </div>
 
     </div>

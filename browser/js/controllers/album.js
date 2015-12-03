@@ -1,14 +1,13 @@
-app.controller('AlbumCtrl', function($scope, $http, $rootScope, StatsFactory, PlayerFactory) {
+app.controller('AlbumCtrl', function($scope, $rootScope, StatsFactory, PlayerFactory, AlbumFactory, SongFactory ) {
 
   // load our initial data
   var loadAlbum = function( albumId ) {
   
-    return $http.get('/api/albums/' + albumId)
-    .then(res => res.data )
+    return AlbumFactory.fetchById(albumId)
     .then(album => {
       album.imageUrl = '/api/albums/' + album._id + '.image';
-      album.songs.forEach(function(song){
-        song.audioUrl = '/api/songs/' + song._id + '.audio';
+      album.songs.map(function(song){
+        return SongFactory.fetchAudioUrl(song);
       });
       $scope.album = album;
     }).then(function() {

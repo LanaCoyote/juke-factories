@@ -1,4 +1,4 @@
-app.controller('AlbumListCtrl', function( $scope, $rootScope, $http ) {
+app.controller('AlbumListCtrl', function( $scope, $rootScope, AlbumFactory ) {
 
   $scope.show = false;
 
@@ -7,8 +7,7 @@ app.controller('AlbumListCtrl', function( $scope, $rootScope, $http ) {
     else $scope.show = false;
   });
 
-  $http.get('/api/albums/')
-  .then(res => res.data)
+  AlbumFactory.fetchAll()
   .then(albums => {
 
     albums.map( function( album ) {
