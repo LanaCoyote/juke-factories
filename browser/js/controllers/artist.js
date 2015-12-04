@@ -39,12 +39,22 @@ app.controller('ArtistCtrl', function( $scope, $rootScope, PlayerFactory, Artist
 
   // main toggle
   $scope.toggle = function (song) {
-    console.log(song);
-    if ($scope.isPlaying()) PlayerFactory.pause();
-    else PlayerFactory.start( song, $scope.artist.songs );
-    console.log(PlayerFactory.currentSong);
+    if ($scope.isPlaying(song)) PlayerFactory.pause();
+    else PlayerFactory.start( song, {songs:$scope.artist.songs} );
   };
 
+  $scope.toggleShuffle = function() {
+
+    PlayerFactory.toggleShuffle();
+
+  }
+
+  $scope.shuffling = function() {
+
+    return PlayerFactory.isShuffling();
+
+  }
+  
   $scope.viewAlbum = function( albumId ) {
 
     $rootScope.$broadcast( 'showview', 'Album', albumId )

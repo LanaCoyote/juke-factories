@@ -10,10 +10,6 @@ app.controller('AlbumCtrl', function($scope, $rootScope, StatsFactory, PlayerFac
         return SongFactory.fetchAudioUrl(song);
       });
       $scope.album = album;
-    }).then(function() {
-      return StatsFactory.totalTime( $scope.album );
-    }).then( duration => {
-      $scope.duration = Math.round( Number( duration ) ).toString();
     }).catch(console.error.bind(console));
   
   }
@@ -25,6 +21,10 @@ app.controller('AlbumCtrl', function($scope, $rootScope, StatsFactory, PlayerFac
 
       loadAlbum( albumId ).then( function() {
         $scope.show = true;
+      }).then(function() {
+        return StatsFactory.totalTime( $scope.album );
+      }).then( duration => {
+        $scope.duration = Math.round( Number( duration ) ).toString();
       });
 
     }
@@ -41,8 +41,21 @@ app.controller('AlbumCtrl', function($scope, $rootScope, StatsFactory, PlayerFac
 
   // main toggle
   $scope.toggle = function (song) {
-    if ($scope.isPlaying()) PlayerFactory.pause();
+    // console.log("Pressed play/pause", "song is playing?", $scope.isPlaying())
+    if ($scope.isPlaying(song)) PlayerFactory.pause();
     else PlayerFactory.start( song, $scope.album );
+  }
+
+  $scope.toggleShuffle = function() {
+
+    PlayerFactory.toggleShuffle();
+
+  }
+
+  $scope.shuffling = function() {
+
+    return PlayerFactory.isShuffling();
+
   }
 
 });
